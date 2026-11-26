@@ -1,0 +1,42 @@
+{
+  "name": "horeca-qr-platform",
+  "version": "1.0.0",
+  "description": "Platformă web real-time pentru eficientizarea fluxului HoReCa prin meniuri QR securizate",
+  "main": "dist/server.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "db:verify": "node db/verify.mjs",
+    "db:seed": "node scripts/seed.mjs",
+    "test": "node --test --env-file=.env.test tests/**/*.test.mjs",
+    "smoke": "node --env-file=.env.test scripts/smoke.mjs",
+    "attacks": "node scripts/attacks/run-all.mjs",
+    "load": "node load/run.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.2.14",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.1",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
+
