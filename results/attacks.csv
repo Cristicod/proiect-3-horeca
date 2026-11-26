@@ -1,0 +1,6 @@
+Scenario,Attempts,Accepted,Rejected,ExpectedAccepted,Status
+"A1: QR fotografiat înainte de deschidere (sesiune închisă)",50,0,50,0,MATCH
+"A2: QR fotografiat în timpul sesiunii (dispozitive străine)",50,4,46,4,MATCH
+"A3: Comandă după închiderea sesiunii",50,0,50,0,MATCH
+"A4: Token ghicit sau modificat (un bit schimbat)",50,0,50,0,MATCH
+"A5: Rafală de comenzi de pe un singur dispozitiv",50,10,40,10,MATCH

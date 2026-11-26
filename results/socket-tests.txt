@@ -1,0 +1,9 @@
+SOCK-01 - fără cookie și fără token: connect_error cu not_authenticated: PASS
+SOCK-02 - Origin străin prezent: origin_not_allowed: PASS
+SOCK-03 - fără Origin (polling same-origin): se conectează: PASS
+SOCK-04 - clientul unei mese primește order:state cu queued după POST /api/orders: PASS
+SOCK-05 - bucătăria primește dispatched de la worker, fără să-l fi cerut: PASS
+SOCK-06 - token JWT invalid: not_authenticated: PASS
+SOCK-07 - clientul altei mese NU primește evenimentele mesei 1 (izolare pe camere): PASS
+Total teste: 7
+Status: ALL PASS

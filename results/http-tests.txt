@@ -1,0 +1,36 @@
+SCAN-01 - token valid: 302 spre APP_URL/menu, cookie qr_dev cu HttpOnly și SameSite=Strict: PASS
+SCAN-02 - token cu format greșit: 404: PASS
+SCAN-03 - token al unei sesiuni închise: 404: PASS
+SCAN-04 - același dispozitiv scanează a doua oară: nu se creează membru nou: PASS
+SCAN-05 - al cincilea dispozitiv: 403, cu mesajul despre 4 dispozitive: PASS
+SCAN-06 - două scanări simultane ale primei sesiuni: exact un owner: PASS
+INV-01 - proprietarul creează o invitație: primește URL. Invitatul intră prin /i/:token, primește cookie și redirect, iar used_at e setat: PASS
+INV-02 - a doua folosire a aceleiași invitații: 404: PASS
+INV-03 - invitație creată de un guest: 403 owner_only: PASS
+INV-04 - a patra invitație activă: 409 invite_cap_reached: PASS
+INV-05 - invitație expirată (ajustată în DB): 404: PASS
+ORD-01 - comandă validă: 201, queued, dispatchAfter ≈ acum + 25 s: PASS
+ORD-02 - același requestId de două ori: duplicate: true, un singur rând în orders: PASS
+ORD-03 - produs indisponibil: 409 item_unavailable, zero rânduri noi în orders și order_items: PASS
+ORD-04 - anulare în fereastră: 200, cancelled: PASS
+ORD-05 - anulare după fereastră (dispatch_after mutat în trecut în DB): 409 undo_window_closed: PASS
+ORD-06 - anularea comenzii altui membru: 409: PASS
+ORD-07 - cantitate 0, cantitate 21 sau peste 30 de linii: 400: PASS
+ORD-08 - fără cookie: 401: PASS
+ORD-09 - înghețare dispozitiv abuziv comenzi: membrul abuziv blocat (403), celălalt membru merge: PASS
+CALL-01 - apel valid: 201: PASS
+CALL-02 - al patrulea apel deschis: 409 call_cap_reached: PASS
+CALL-03 - peste limita de rată (6 pe minut): 429: PASS
+CALL-04 - înghețare dispozitiv abuziv apeluri: membru înghețat 403 device_frozen: PASS
+STF-01 - fără token: 401: PASS
+STF-02 - bucătar care deschide o masă: 403: PASS
+STF-03 - ospătar care trece o comandă la preparing: 403 forbidden_transition: PASS
+STF-04 - bucătar care trece la served: 403: PASS
+STF-05 - PATCH de la dispatched direct la ready: 409 (tranziție ilegală): PASS
+STF-06 - deschiderea unei mese deja deschise: 409 table_already_open: PASS
+STF-07 - parolă greșită: 401. Peste 20 de încercări în 15 minute: 429: PASS
+SESS-01 - sesiune expirată (ajustată în DB), cu cookie-ul vechi: /api/menu dă 401: PASS
+CFG-01 - NODE_ENV=production cu COOKIE_SECURE=false: procesul refuză să pornească: PASS
+CFG-02 - NODE_ENV=production cu BASELINE_MODE=true: procesul refuză să pornească: PASS
+Total teste: 34
+Status: ALL PASS

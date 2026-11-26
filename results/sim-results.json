@@ -1,0 +1,15 @@
+{
+  "meta": {
+    "generated_at": "2026-11-23T17:12:39.145Z",
+    "label": "Rezultate Simulare Eficiență Operațională HoReCa",
+    "disclaimer": "Această analiză este o SIMULARE algoritmică bazată pe parametri presupuși. În lipsa unui restaurant partener, nu s-au efectuat măsurători fizice ale timpilor de servire."
+  },
+  "metrics": {
+    "traditional_lead_time_to_kitchen_sec": 180,
+    "qr_platform_lead_time_to_kitchen_sec": 30.1,
+    "lead_time_reduction_percent": 83.3,
+    "traditional_waiter_hours_20_tables": 2.17,
+    "qr_platform_waiter_hours_20_tables": 0.5,
+    "waiter_time_saved_percent": 76.9
+  }
+}

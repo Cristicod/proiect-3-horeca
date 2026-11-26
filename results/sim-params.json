@@ -1,0 +1,22 @@
+{
+  "assumptions_label": "SIMULARE (Fără măsurători fizice în restaurant partener)",
+  "tables_count": 20,
+  "average_party_size": 3,
+  "orders_per_table": 2,
+  "traditional_workflow": {
+    "waiter_walk_to_table_sec": 45,
+    "customer_menu_reading_with_waiter_sec": 120,
+    "waiter_write_paper_sec": 60,
+    "waiter_walk_to_kitchen_sec": 45,
+    "kitchen_ticket_input_sec": 30,
+    "waiter_bill_delivery_sec": 90
+  },
+  "qr_secured_workflow": {
+    "customer_qr_scan_sec": 5,
+    "customer_menu_browse_independent_sec": 0,
+    "order_digital_transmission_sec": 0.1,
+    "cancellation_window_sec": 25,
+    "waiter_notification_to_kitchen_sec": 0,
+    "digital_bill_request_sec": 10
+  }
+}

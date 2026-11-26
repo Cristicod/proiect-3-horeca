@@ -1,0 +1,17 @@
+{
+  "mode": "baseline",
+  "virtualUsers": 100,
+  "timestamp": "2026-11-23T17:10:39.006Z",
+  "totalRequests": 100,
+  "successfulRequests": 100,
+  "failedRequests": 0,
+  "errorRatePercent": 0,
+  "latencyMs": {
+    "min": 3.42,
+    "max": 9.77,
+    "avg": 6.01,
+    "p50": 5.62,
+    "p95": 9.16,
+    "p99": 9.77
+  }
+}

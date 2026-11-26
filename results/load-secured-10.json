@@ -1,0 +1,17 @@
+{
+  "mode": "secured",
+  "virtualUsers": 10,
+  "timestamp": "2026-11-23T17:10:37.816Z",
+  "totalRequests": 10,
+  "successfulRequests": 10,
+  "failedRequests": 0,
+  "errorRatePercent": 0,
+  "latencyMs": {
+    "min": 14.12,
+    "max": 61.05,
+    "avg": 47.04,
+    "p50": 50.62,
+    "p95": 61.05,
+    "p99": 61.05
+  }
+}

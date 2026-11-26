@@ -1,0 +1,30 @@
+======================================================
+START SMOKE TEST END-TO-END (T01)
+Timp pornire: 2026-11-23T16:56:40.009Z
+======================================================
+✓ Seed finalizat cu succes.
+✓ Server pornit pe portul 3001
+✓ a1) Autentificare ospatar reușită.
+✓ a2) Masă deschisă. URL sesiune QR: http://localhost:3001/s/16de5ddd672057e9d783ffe1929772cc361dd2d1a3cf3797
+✓ b) Scanare validată: 302 redirect la /menu, Set-Cookie qr_dev cu HttpOnly și SameSite=Strict.
+✓ c1) GET /api/menu a returnat 5 produse.
+✓ c2) GET /api/session a returnat datele mesei 1 (isOwner: true).
+✓ e1) Socket bucătărie conectat cu succes.
+✓ d) Comandă ea835215-64f4-4c3b-b5ab-95ad4d2e8237 creată în starea queued. Dispatch programat la: 2026-11-23T16:56:44.286Z
+Așteptare trecere automată la dispatched de către worker...
+✓ e2) Bucătăria a primit automat starea dispatched pentru comanda ea835215-64f4-4c3b-b5ab-95ad4d2e8237!
+>>> TIMP MĂSURAT ÎNTRE QUEUED ȘI DISPATCHED: 3210 ms (~3.21 secunde) <<<
+✓ f1) Bucătăria a trecut comanda la: preparing
+✓ f2) Bucătăria a trecut comanda la: ready
+✓ f3) Ospătarul a trecut comanda la: served
+✓ g1) Apel ospătar creat cu succes (id: b0230459-3512-4207-928c-415ce3e936a8).
+✓ g2) Ospătarul a confirmat apelul (acknowledged).
+✓ h1) Sesiune masă închisă de ospătar.
+✓ h2) GET url după închiderea sesiunii a returnat 404 Not Found conform specificației.
+======================================================
+SMOKE TEST T01 FINALIZAT CU SUCCES! STATUS: PASS
+======================================================
+
+Rezumat: Timp masurat intre queued si dispatched: 3210 ms
+Status: PASS
+Data: 2026-11-23T16:56:44.522Z

@@ -1,0 +1,30 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 10
+      arrivalRate: 10
+      name: "Ramp up to 10 VUs"
+    - duration: 20
+      arrivalRate: 50
+      name: "Ramp up to 50 VUs"
+    - duration: 30
+      arrivalRate: 100
+      name: "Peak load 100 VUs"
+scenarios:
+  - name: "Secured QR Order Flow"
+    flow:
+      - get:
+          url: "/s/{{ sessionToken }}"
+          capture:
+            - header: "set-cookie"
+              as: "cookieHeader"
+      - post:
+          url: "/api/orders"
+          headers:
+            Cookie: "{{ cookieHeader }}"
+          json:
+            clientRequestId: "artillery_sec_{{ $randomNumber(1000, 999999) }}"
+            items:
+              - menuItemId: "{{ menuItemId }}"
+                quantity: 1
+
