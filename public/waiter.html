@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ospătar - Panou Control Mese</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background: var(--bg); padding: 1rem; color: #1e293b; max-width: 900px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .badge { padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
+    .badge-free { background: #dcfce7; color: #15803d; }
+    .badge-busy { background: #fee2e2; color: #b91c1c; }
+    .btn { padding: 0.5rem 0.8rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-success { background: #10b981; color: white; }
+    
+    /* Login overlay (T08) */
+    .login-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
+    .login-box { background: white; padding: 2rem; border-radius: 8px; width: 320px; }
+    .login-box input { width: 100%; padding: 0.6rem; margin-bottom: 0.8rem; border: 1px solid var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>🛎️ Ospătar - Gestiune Mese</h2>
+    <div id="staffInfo">Conectare...</div>
+  </header>
+
+  <h3>Status Mese Restaurant</h3>
+  <div id="tablesContainer" class="grid">Se încarcă mesele...</div>
+
+  <h3>Comenzi Gata de Servire</h3>
+  <div id="readyOrdersContainer" class="grid">Nu există comenzi gata de servire.</div>
+
+  <!-- Modal Login T08 -->
+  <div id="loginModal" class="login-overlay">
+    <div class="login-box">
+      <h3 style="margin-bottom: 1rem;">Autentificare Ospătar</h3>
+      <input type="email" id="emailInput" value="ospatar@demo.ro">
+      <input type="password" id="passInput" value="parola123">
+      <button class="btn btn-primary" style="width: 100%;" onclick="doLogin()">Autentificare</button>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('waiter_token');
+    let socket;
+    let tables = [];
+    let readyOrders = [];
+
+    async function init() {
+      if (!token) {
+        showLogin();
+        return;
+      }
+
+      const res = await fetch('/api/staff/tables', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        // T08: 401 readuce formularul
+        localStorage.removeItem('waiter_token');
+        showLogin();
+        return;
+      }
+
+      tables = await res.json();
+      renderTables();
+      loadOrders();
+      connectSocket();
+    }
+
+    function showLogin() {
+      document.getElementById('loginModal').style.display = 'flex';
+      if (socket) socket.disconnect();
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passInput').value;
+      const res = await fetch('/api/staff/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        token = data.token;
+        localStorage.setItem('waiter_token', token);
+        document.getElementById('loginModal').style.display = 'none';
+        init();
+      } else {
+        alert('Date incorecte');
+      }
+    }
+
+    function connectSocket() {
+      if (socket) socket.disconnect();
+      socket = io({ auth: { token } });
+
+      socket.on('table:call', (data) => {
+        alert(`🔔 Apel nou la Masa #${data.tableId} (${data.callType})`);
+      });
+
+      socket.on('order:ready', () => {
+        loadOrders();
+      });
+    }
+
+    async function loadOrders() {
+      const res = await fetch('/api/staff/orders', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const all = await res.json();
+        readyOrders = all.filter(o => o.state === 'ready');
+        renderReadyOrders();
+      }
+    }
+
+    function renderTables() {
+      const container = document.getElementById('tablesContainer');
+      container.innerHTML = tables.map(t => `
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+            <h4>Masa #${t.table_number}</h4>
+            <span class="badge ${t.status_derivat === 'LIBERA' ? 'badge-free' : 'badge-busy'}">
+              ${t.status_derivat}
+            </span>
+          </div>
+          <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.8rem;">
+            Dispozitive conectate: ${t.active_devices_count || 0} / 4
+          </p>
+          <div>
+            ${t.status_derivat === 'LIBERA' ? `
+              <button class="btn btn-primary" onclick="openTable('${t.table_id}')">Deschide Masa (Generează QR)</button>
+            ` : `
+              <button class="btn btn-danger" onclick="closeTable('${t.table_id}')">Închide Masa</button>
+              <a href="/s/${t.session_token}" target="_blank" style="font-size: 0.8rem; margin-left: 0.5rem;">Deschide Meniu</a>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderReadyOrders() {
+      const container = document.getElementById('readyOrdersContainer');
+      if (readyOrders.length === 0) {
+        container.innerHTML = '<p style="color: #64748b;">Nicio comandă gata de servire.</p>';
+        return;
+      }
+      container.innerHTML = readyOrders.map(o => `
+        <div class="card" style="border-left: 5px solid #10b981;">
+          <h4>Comandă #${o.id.substring(0,8)} - Masa #${o.table_number}</h4>
+          <button class="btn btn-success" style="margin-top: 0.8rem;" onclick="markServed('${o.id}')">Marchează Servită</button>
+        </div>
+      `).join('');
+    }
+
+    async function openTable(tableId) {
+      const res = await fetch(`/api/staff/tables/${tableId}/open`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Masa deschisă! URL QR: ${data.url}`);
+        init();
+      }
+    }
+
+    async function closeTable(tableId) {
+      if (!confirm('Sigur doriți să închideți masa?')) return;
+      const res = await fetch(`/api/staff/tables/${tableId}/close`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        alert('Masa a fost închisă.');
+        init();
+      }
+    }
+
+    async function markServed(orderId) {
+      const res = await fetch(`/api/staff/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: 'served' })
+      });
+      if (res.ok) {
+        loadOrders();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
+

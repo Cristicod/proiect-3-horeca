@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bucătărie - KDS Real-Time</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    :root {
+      --bg: #121824;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --accent: #38bdf8;
+      --preparing: #f59e0b;
+      --ready: #10b981;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: monospace, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 1rem; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+    .kds-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+    .order-card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border); padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; }
+    .order-card.preparing { border-left: 6px solid var(--preparing); }
+    .order-card.dispatched { border-left: 6px solid var(--accent); }
+    .card-header { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 1.1rem; }
+    .items-list { list-style: none; margin-bottom: 1rem; }
+    .items-list li { display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px dashed var(--border); }
+    .actions { display: flex; gap: 0.5rem; }
+    .btn { flex: 1; padding: 0.6rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-prep { background: var(--preparing); color: black; }
+    .btn-ready { background: var(--ready); color: black; }
+    
+    /* Login overlay pentru starea 401 (T08) */
+    .login-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 500; align-items: center; justify-content: center; }
+    .login-card { background: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border); width: 320px; }
+    .login-card input { width: 100%; padding: 0.6rem; margin-bottom: 0.8rem; background: #0f172a; border: 1px solid var(--border); color: white; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍳 KDS - Afișaj Bucătărie</h1>
+    <div id="statusIndicator" style="color: #10b981;">● Conectat Socket.IO</div>
+  </header>
+
+  <div id="kdsContainer" class="kds-grid">
+    <p style="color: #94a3b8;">Așteptare comenzi trimise din mese...</p>
+  </div>
+
+  <!-- T08: Formular login readus automat la 401 fără blocare pagină -->
+  <div id="loginModal" class="login-overlay">
+    <div class="login-card">
+      <h3 style="margin-bottom: 1rem;">Autentificare Bucătar</h3>
+      <input type="email" id="emailInput" value="bucatar@demo.ro" placeholder="Email">
+      <input type="password" id="passInput" value="parola123" placeholder="Parolă">
+      <button class="btn btn-prep" style="width: 100%;" onclick="doLogin()">Conectare</button>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('kitchen_token');
+    let socket;
+    let orders = [];
+
+    async function checkAuthAndLoad() {
+      if (!token) {
+        showLogin();
+        return;
+      }
+
+      const res = await fetch('/api/staff/orders', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.status === 401) {
+        // T08: 401 readuce formularul de login
+        localStorage.removeItem('kitchen_token');
+        showLogin();
+        return;
+      }
+
+      orders = await res.json();
+      renderOrders();
+      connectSocket();
+    }
+
+    function showLogin() {
+      document.getElementById('loginModal').style.display = 'flex';
+      if (socket) socket.disconnect();
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passInput').value;
+      const res = await fetch('/api/staff/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        token = data.token;
+        localStorage.setItem('kitchen_token', token);
+        document.getElementById('loginModal').style.display = 'none';
+        checkAuthAndLoad();
+      } else {
+        alert('Autentificare eșuată');
+      }
+    }
+
+    function connectSocket() {
+      if (socket) socket.disconnect();
+      socket = io({ auth: { token } });
+
+      socket.on('order:state', (data) => {
+        if (data.state === 'dispatched') {
+          // Reîncărcare automată din KDS la sosirea unei comenzi dispatched
+          checkAuthAndLoad();
+        } else {
+          const ord = orders.find(o => o.id === data.orderId);
+          if (ord) {
+            ord.state = data.state;
+            renderOrders();
+          }
+        }
+      });
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('kdsContainer');
+      const active = orders.filter(o => o.state === 'dispatched' || o.state === 'preparing');
+
+      if (active.length === 0) {
+        container.innerHTML = '<p style="color: #94a3b8;">Nu există comenzi active în așteptare.</p>';
+        return;
+      }
+
+      container.innerHTML = active.map(o => `
+        <div class="order-card ${o.state}">
+          <div>
+            <div class="card-header">
+              <strong>Masa #${o.table_number}</strong>
+              <span style="font-size: 0.85rem; text-transform: uppercase;">${o.state}</span>
+            </div>
+            <ul class="items-list">
+              ${(o.items || []).map(i => `<li><span>${i.name}</span><strong>x${i.quantity}</strong></li>`).join('')}
+            </ul>
+          </div>
+          <div class="actions">
+            ${o.state === 'dispatched' ? `
+              <button class="btn btn-prep" onclick="updateStatus('${o.id}', 'preparing')">PREPARĂ</button>
+            ` : ''}
+            ${o.state === 'preparing' ? `
+              <button class="btn btn-ready" onclick="updateStatus('${o.id}', 'ready')">GATA DE SERVIRE</button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function updateStatus(orderId, status) {
+      const res = await fetch(`/api/staff/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      if (res.status === 401) {
+        showLogin();
+      } else if (res.ok) {
+        const ord = orders.find(o => o.id === orderId);
+        if (ord) ord.state = status;
+        renderOrders();
+      }
+    }
+
+    checkAuthAndLoad();
+  </script>
+</body>
+</html>
+

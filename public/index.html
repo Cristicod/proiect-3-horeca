@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platformă HoReCa - Meniuri QR Securizate</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --secondary: #1e293b;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--secondary); padding: 2rem 1rem; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .header { text-align: center; margin-bottom: 2.5rem; max-width: 650px; }
+    .header h1 { font-size: 2.2rem; margin-bottom: 0.8rem; color: #0f172a; }
+    .header p { color: #64748b; font-size: 1.1rem; line-height: 1.5; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 960px; width: 100%; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.8rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    .card-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .card h3 { font-size: 1.3rem; margin-bottom: 0.5rem; color: #0f172a; }
+    .card p { color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; flex-grow: 1; }
+    .btn { display: inline-block; padding: 0.7rem 1.2rem; border-radius: 8px; font-weight: 600; font-size: 0.95rem; text-align: center; text-decoration: none; background: var(--primary); color: white; transition: background 0.2s; }
+    .btn:hover { background: #1d4ed8; }
+    .btn-kitchen { background: #d97706; }
+    .btn-kitchen:hover { background: #b45309; }
+    .btn-waiter { background: #2563eb; }
+    .btn-menu { background: #059669; }
+    .btn-menu:hover { background: #047857; }
+    .footer { margin-top: 3rem; text-align: center; color: #94a3b8; font-size: 0.85rem; }
+    .credentials { background: #f1f5f9; padding: 0.5rem 0.8rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; margin-top: 0.5rem; color: #334155; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🍽️ HoReCa QR Platform</h1>
+    <p>Platformă web real-time pentru eficientizarea fluxului HoReCa prin meniuri QR securizate și sincronizare live via Socket.IO.</p>
+  </div>
+
+  <div class="grid">
+    <!-- Card Ospatar -->
+    <div class="card">
+      <div>
+        <div class="card-icon">🛎️</div>
+        <h3>Panoul Ospătarului</h3>
+        <p>Gestiunea meselor din restaurant, deschidere masă cu generare cod QR securizat, apeluri clienți și servire comenzi.</p>
+        <div class="credentials">Login: ospatar@demo.ro / parola123</div>
+      </div>
+      <a href="/waiter" class="btn btn-waiter" style="margin-top: 1rem;">Deschide Panou Ospătar &rarr;</a>
+    </div>
+
+    <!-- Card Bucatarie -->
+    <div class="card">
+      <div>
+        <div class="card-icon">🍳</div>
+        <h3>Afișaj Bucătărie (KDS)</h3>
+        <p>Afișaj bucătărie în timp real. Comenzile apar automat după expirarea ferestrei de anulare (25s) și pot fi trecute în preparare.</p>
+        <div class="credentials">Login: bucatar@demo.ro / parola123</div>
+      </div>
+      <a href="/kitchen" class="btn btn-kitchen" style="margin-top: 1rem;">Deschide Afișaj Bucătărie &rarr;</a>
+    </div>
+
+    <!-- Card Meniu Client -->
+    <div class="card">
+      <div>
+        <div class="card-icon">📱</div>
+        <h3>Meniu Client (Demo)</h3>
+        <p>Interfața clienților la masă. Plasare comenzi, fereastră de anulare (undo 25s), chemare ospătar și invitații la masă.</p>
+        <div class="credentials">Se deschide automat la scanarea QR</div>
+      </div>
+      <a href="/waiter" class="btn btn-menu" style="margin-top: 1rem;">Deschide o Masă din Panou &rarr;</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    Platformă HoReCa • Express 5 • Socket.IO • PostgreSQL (PGlite) • Licență & Cercetare
+  </div>
+</body>
+</html>
+
